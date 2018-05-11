@@ -34,6 +34,20 @@
        state=latest
        install_recommends=no
   with_items: '{{ icinga2_pkg }}'
+  when: icinga2_install == 'standard'
+
+- name: Install Icinga2 Deps on Debian OS family
+  apt: pkg={{ item.package }}
+       update_cache=yes
+       state=latest
+       install_recommends=no
+  with_items: '{{ icinga2_ubuntu_custom_pkg }}'
+  when: icinga2_install == 'custom'
+
+- name: Install CUSTOM Icinga2 on Debian OS family
+  apt:
+    deb: /opt/icinga2/icinga2_custom.deb
+  when: icinga2_install == 'custom'
 
 - name: Start Icinga2
   service: name=icinga2
