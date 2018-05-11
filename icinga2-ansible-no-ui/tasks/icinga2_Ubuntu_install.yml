@@ -32,6 +32,7 @@
   apt: pkg={{ item.package }}
        update_cache=yes
        install_recommends=no
+       force=yes
   with_items: '{{ icinga2_ubuntu_pkg }}'
   when: icinga2_install == 'standard'
 
@@ -39,12 +40,13 @@
   apt: pkg={{ item.package }}
        update_cache=yes
        install_recommends=no
+       force=yes
   with_items: '{{ icinga2_ubuntu_custom_pkg }}'
   when: icinga2_install == 'custom'
 
 - name: Install CUSTOM Icinga2 on Debian OS family
-  apt:
-    deb: /opt/icinga2/icinga2_custom.deb
+  apt: deb=/opt/icinga2/icinga2_custom.deb
+       force=yes
   when: icinga2_install == 'custom'
 
 - name: Start Icinga2
