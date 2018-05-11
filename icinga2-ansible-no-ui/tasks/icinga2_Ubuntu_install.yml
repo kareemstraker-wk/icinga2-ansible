@@ -31,7 +31,7 @@
 - name: Install Icinga2 on Debian OS family
   apt: pkg={{ item.package }}
        update_cache=yes
-       state=latest
+      #  state=latest
        install_recommends=no
   with_items: '{{ icinga2_ubuntu_pkg }}'
   when: icinga2_install == 'standard'
@@ -39,7 +39,7 @@
 - name: Install Icinga2 Deps on Debian OS family
   apt: pkg={{ item.package }}
        update_cache=yes
-       state=latest
+      #  state=latest
        install_recommends=no
   with_items: '{{ icinga2_ubuntu_custom_pkg }}'
   when: icinga2_install == 'custom'
