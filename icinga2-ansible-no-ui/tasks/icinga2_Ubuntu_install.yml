@@ -33,7 +33,7 @@
        update_cache=yes
        state=latest
        install_recommends=no
-  with_items: '{{ icinga2_pkg }}'
+  with_items: '{{ icinga2_ubuntu_pkg }}'
   when: icinga2_install == 'standard'
 
 - name: Install Icinga2 Deps on Debian OS family
