@@ -54,8 +54,7 @@
   when: icinga2_install == 'custom'
 
 - name: Install CUSTOM Icinga2 on Debian OS family
-  apt: deb=/opt/icinga2/{{ item }}
-       force=yes
+  apt: deb={{ item }} state=installed force=yes
   with_items: '{{ icinga2_custom_deb_items.files }}'
   when: icinga2_install == 'custom'
 
