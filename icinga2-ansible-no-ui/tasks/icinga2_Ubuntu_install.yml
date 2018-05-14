@@ -46,7 +46,7 @@
 
 - name: List deb files for installation
   find:
-    paths=/opt/icinga
+    paths=/opt/icinga2
     file_type=file
     patterns='*.deb'
     recurse=yes
@@ -54,7 +54,8 @@
   when: icinga2_install == 'custom'
 
 - name: Install CUSTOM Icinga2 on Debian OS family
-  apt: deb={{ item }} state=installed force=yes
+  apt: deb={{ item.path }}
+       force=yes
   with_items: '{{ icinga2_custom_deb_items.files }}'
   when: icinga2_install == 'custom'
 
