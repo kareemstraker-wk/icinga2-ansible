@@ -44,9 +44,19 @@
   with_items: '{{ icinga2_ubuntu_custom_pkg }}'
   when: icinga2_install == 'custom'
 
+- name: List deb files for installation
+  find:
+    paths=/opt/icinga
+    file_type=file
+    patterns='*.deb'
+    recurse=yes
+  register: icinga2_custom_deb_items
+  when: icinga2_install == 'custom'
+
 - name: Install CUSTOM Icinga2 on Debian OS family
-  apt: deb=/opt/icinga2/icinga2_custom.deb
+  apt: deb=/opt/icinga2/{{ item }}
        force=yes
+  with_items: '{{ icinga2_custom_deb_items.files }}'
   when: icinga2_install == 'custom'
 
 - name: Start Icinga2
