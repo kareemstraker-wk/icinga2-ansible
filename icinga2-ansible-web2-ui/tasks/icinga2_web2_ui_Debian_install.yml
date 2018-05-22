@@ -7,6 +7,10 @@
        state=latest
   when: icinga2_install == 'standard'
 
+- name: install (via gdebi) icinga-ido-mysql
+  shell: gdebi /opt/icinga2/icinga2-ido-mysql_2.8.4-2wk_amd64.deb
+  when: icinga2_install == 'custom'
+
 - name: Create a IDO Database for Icinga2
   mysql_db:
     name: "{{ icinga2_db }}"
