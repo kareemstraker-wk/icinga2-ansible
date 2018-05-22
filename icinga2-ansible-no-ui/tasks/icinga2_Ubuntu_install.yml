@@ -119,12 +119,6 @@
   shell: gdebi /opt/icinga2/icinga2_2.8.4-2wk_amd64.deb -n
   when: icinga2_install == 'custom'
 
-# - name: install (via gdebi) icinga-ido-mysql
-#   # shell: gdebi /opt/icinga2/icinga2-ido-mysql_2.8.4-2wk_amd64.deb -n
-#   apt: deb=/opt/icinga2/icinga2-ido-mysql_2.8.4-2wk_amd64.deb
-#        force=yes
-#   when: icinga2_install == 'custom'
-
 - name: Start Icinga2
   service: name=icinga2
            state=started
