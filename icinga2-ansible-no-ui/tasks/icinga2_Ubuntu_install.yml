@@ -124,15 +124,11 @@
   when: icinga2_install == 'custom'
 
 - name: install (via gdebi) bin
-  shell: gdebi /opt/icinga2/libicinga2_2.8.4-3wk_amd64.deb -n
+  shell: gdebi /opt/icinga2/icinga2-dbg_2.8.4-3wk_amd64.deb -n
   when: icinga2_install == 'custom'
 
 - name: install (via gdebi) bin
-  shell: gdebi /opt/icinga2/icinga2-bin_2.8.4-3wk_amd64.deb -n
-  when: icinga2_install == 'custom'
-
-- name: install (via gdebi) bin
-  shell: gdebi /opt/icinga2/icinga2_2.8.4-3wk_amd64.deb -n
+  shell: gdebi /opt/icinga2/icinga2-doc_2.8.4-3wk_all.deb -n
   when: icinga2_install == 'custom'
 
 - name: install (via gdebi) icinga
