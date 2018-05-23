@@ -103,7 +103,7 @@
        install_recommends=no
   when: icinga2_install == 'custom'
 
-- name: install (via gdebi) common
+- name: install (via apt-get) mysql-client
   shell: apt-get install mysql-client -y
   when: icinga2_install == 'custom'
 
