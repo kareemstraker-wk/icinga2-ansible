@@ -59,44 +59,44 @@
 #   with_items: '{{ icinga2_custom_deb_items.files }}'
 #   when: icinga2_install == 'custom'
 
-# - name: Remove ansible dependencies using apt
-#   apt:
-#     name: "{{ item }}"
-#     state: absent
-#     purge: yes
-#   with_items:
-#     - icinga2
-#     - icinga2-bin
-#     - icinga2-classicui
-#     - icinga2-common
-#     - icinga2-dbg
-#     - icinga2-doc
-#     - icinga2-ido-mysql
-#     - icinga2-ido-pgsql
-#     - icinga2-studio
-#     - libicinga2
-#     - vim-icinga2
-#     - apache2-utils
-#     - nagios-plugins
-#     - bsd-mailx
-#     - gdebi
-#   when: icinga2_install == 'custom'
+- name: Remove ansible dependencies using apt
+  apt:
+    name: "{{ item }}"
+    state: absent
+    purge: yes
+  with_items:
+    - icinga2
+    - icinga2-bin
+    - icinga2-classicui
+    - icinga2-common
+    - icinga2-dbg
+    - icinga2-doc
+    - icinga2-ido-mysql
+    - icinga2-ido-pgsql
+    - icinga2-studio
+    - libicinga2
+    - vim-icinga2
+    - apache2-utils
+    - nagios-plugins
+    - bsd-mailx
+    - gdebi
+  when: icinga2_install == 'custom'
 
-# - name: cleanup/fix installations
-#   shell: apt-get -f install -y
-#   when: icinga2_install == 'custom'
+- name: cleanup/fix installations
+  shell: apt-get -f install -y
+  when: icinga2_install == 'custom'
 
-# - name: remove all dependencies and icinga
-#   shell: apt-get remove icinga2 icinga2-bin icinga2-classicui icinga2-common icinga2-dbg icinga2-doc icinga2-ido-mysql icinga2-ido-pgsql icinga2-studio libicinga2 vim-icinga2 apache2-utils nagios-plugins bsd-mailx gdebi -y
-#   when: icinga2_install == 'custom'
+- name: remove all dependencies and icinga
+  shell: apt-get remove icinga2 icinga2-bin icinga2-classicui icinga2-common icinga2-dbg icinga2-doc icinga2-ido-mysql icinga2-ido-pgsql icinga2-studio libicinga2 vim-icinga2 apache2-utils nagios-plugins bsd-mailx gdebi -y
+  when: icinga2_install == 'custom'
 
-# - name: cleanup/fix installations
-#   shell: apt-get -f install -y
-#   when: icinga2_install == 'custom'
+- name: cleanup/fix installations
+  shell: apt-get -f install -y
+  when: icinga2_install == 'custom'
 
-# - name: remove broken installation leftovers
-#   shell: apt-get autoremove -y
-#   when: icinga2_install == 'custom'
+- name: remove broken installation leftovers
+  shell: apt-get autoremove -y
+  when: icinga2_install == 'custom'
 
 - name: install gdebi
   apt: pkg=gdebi
