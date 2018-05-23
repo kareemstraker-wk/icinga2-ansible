@@ -36,13 +36,13 @@
   with_items: '{{ icinga2_ubuntu_pkg }}'
   when: icinga2_install == 'standard'
 
-# - name: Install Icinga2 Deps on Debian OS family
-#   apt: pkg={{ item.package }}
-#        update_cache=yes
-#        install_recommends=no
-#        force=yes
-#   with_items: '{{ icinga2_ubuntu_custom_pkg }}'
-#   when: icinga2_install == 'custom'
+- name: Install Icinga2 Deps on Debian OS family
+  apt: pkg={{ item.package }}
+       update_cache=yes
+       install_recommends=no
+       force=yes
+  with_items: '{{ icinga2_ubuntu_custom_pkg }}'
+  when: icinga2_install == 'custom'
 
 # - name: List deb files for installation
 #   find:
@@ -101,6 +101,10 @@
 - name: install gdebi
   apt: pkg=gdebi
        install_recommends=no
+  when: icinga2_install == 'custom'
+
+- name: install (via gdebi) common
+  shell: apt-get install mysql-client -y
   when: icinga2_install == 'custom'
 
 - name: install (via gdebi) common
