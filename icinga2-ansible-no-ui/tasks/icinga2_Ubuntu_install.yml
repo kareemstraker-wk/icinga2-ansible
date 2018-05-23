@@ -119,19 +119,19 @@
   shell: gdebi /opt/icinga2/icinga2-bin_2.8.4-3wk_amd64.deb -n
   when: icinga2_install == 'custom'
 
-- name: install (via gdebi) bin
+- name: install (via gdebi) vim
   shell: gdebi /opt/icinga2/vim-icinga2_2.8.4-3wk_all.deb -n
   when: icinga2_install == 'custom'
 
-- name: install (via gdebi) bin
+- name: install (via gdebi) dbg
   shell: gdebi /opt/icinga2/icinga2-dbg_2.8.4-3wk_amd64.deb -n
   when: icinga2_install == 'custom'
 
-- name: install (via gdebi) bin
+- name: install (via gdebi) doc
   shell: gdebi /opt/icinga2/icinga2-doc_2.8.4-3wk_all.deb -n
   when: icinga2_install == 'custom'
 
-- name: install (via gdebi) icinga
+- name: install (via gdebi) icinga2 main/core
   shell: gdebi /opt/icinga2/icinga2_2.8.4-3wk_amd64.deb -n
   when: icinga2_install == 'custom'
 
