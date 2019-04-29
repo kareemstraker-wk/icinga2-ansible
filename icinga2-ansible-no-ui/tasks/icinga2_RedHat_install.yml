@@ -52,9 +52,9 @@
     update_cache: yes
   with_items:
     - "icinga2-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-bin-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-common-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-libs-{{ icinga2_version }}.el7.icinga"
+    # - "icinga2-bin-{{ icinga2_version }}.el7.icinga"
+    # - "icinga2-common-{{ icinga2_version }}.el7.icinga"
+    # - "icinga2-libs-{{ icinga2_version }}.el7.icinga"
     - "icinga2-ido-mysql-{{ icinga2_version }}.el7.icinga"
 
 - name: Start Icinga2
