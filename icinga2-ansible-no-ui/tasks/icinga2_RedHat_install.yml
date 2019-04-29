@@ -57,11 +57,11 @@
     state: present
     update_cache: yes
   with_items:
-    - "icinga2-common-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-bin-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-libs-{{ icinga2_version }}.el7.icinga"
-    - "icinga2-ido-mysql-{{ icinga2_version }}.el7.icinga"
+    - "icinga2-common"
+    - "icinga2-bin"
+    - "icinga2"
+    - "icinga2-libs"
+    - "icinga2-ido-mysql"
 
 - name: Unfix yum weirdness
   lineinfile:
