@@ -45,11 +45,11 @@
     update_cache: yes
   with_items: '{{ icinga2_yum_deps }}'
 
-- name: Fix yum weirdness
-  lineinfile:
-    path: /etc/yum.conf
-    state: present
-    line: 'obsoletes=0'
+# - name: Fix yum weirdness
+#   lineinfile:
+#     path: /etc/yum.conf
+#     state: present
+#     line: 'obsoletes=0'
 
 - name: Install Icinga2 on yum OS family
   yum:
@@ -63,11 +63,11 @@
     - "icinga2-libs"
     - "icinga2-ido-mysql"
 
-- name: Unfix yum weirdness
-  lineinfile:
-    path: /etc/yum.conf
-    state: absent
-    line: 'obsoletes=0'
+# - name: Unfix yum weirdness
+#   lineinfile:
+#     path: /etc/yum.conf
+#     state: absent
+#     line: 'obsoletes=0'
 
 - name: Start Icinga2
   service: name=icinga2
