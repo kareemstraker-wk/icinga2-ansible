@@ -13,6 +13,9 @@
     - name: Get Icinga2 Yum Repo on RedHat OS family
       get_url: url='{{ icinga2_url_yum }}'
                dest={{ icinga2_repo_yum }}
+      environment:
+        ID: "7"
+        VERSION_ID: "7"
   when: icinga2_use_public_yum_repo
 
 - name: Install Icinga2 on RedHat OS family
