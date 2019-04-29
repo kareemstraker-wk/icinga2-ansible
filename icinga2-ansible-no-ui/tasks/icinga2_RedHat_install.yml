@@ -51,11 +51,11 @@
     state: present
     update_cache: yes
   with_items:
-    - "icinga2={{ icinga2_version }}.{{ lsb_release.stdout }}"
-    - "icinga2-bin={{ icinga2_version }}.{{ lsb_release.stdout }}"
-    - "icinga2-common={{ icinga2_version }}.{{ lsb_release.stdout }}"
-    - "libicinga2={{ icinga2_version }}.{{ lsb_release.stdout }}"
-    - "icinga2-ido-mysql={{ icinga2_version }}.{{ lsb_release.stdout }}"
+    - "icinga2={{ icinga2_version }}"
+    - "icinga2-bin={{ icinga2_version }}"
+    - "icinga2-common={{ icinga2_version }}"
+    - "libicinga2={{ icinga2_version }}"
+    - "icinga2-ido-mysql={{ icinga2_version }}"
 
 - name: Start Icinga2
   service: name=icinga2
