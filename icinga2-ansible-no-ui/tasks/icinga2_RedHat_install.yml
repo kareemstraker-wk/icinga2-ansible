@@ -38,11 +38,11 @@
         dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
 
-# - name: Fix yum weirdness
-#   lineinfile:
-#     path: /etc/yum.conf
-#     state: present
-#     line: 'obsoletes=0'
+- name: Fix yum weirdness
+  lineinfile:
+    path: /etc/yum.conf
+    state: present
+    line: 'obsoletes=0'
 
 # - name: Install Icinga2 Deps yum OS family
 #   yum:
@@ -67,8 +67,10 @@
   pip:
     name: "{{ item }}"
   with_items:
-    - "botocore"
-    - "boto3"
+      - django>1.11.0,<1.12.0
+      - bottle>0.10,<0.20,!=0.11
+    - botocore
+    - boto3
 
 - name: Get list of icinga2 files from S3
   aws_s3:
@@ -92,11 +94,11 @@
     state: present
   with_items: "{{ s3_bucket_items.s3_keys }}"
 
-# - name: Unfix yum weirdness
-#   lineinfile:
-#     path: /etc/yum.conf
-#     state: absent
-#     line: 'obsoletes=0'
+- name: Unfix yum weirdness
+  lineinfile:
+    path: /etc/yum.conf
+    state: absent
+    line: 'obsoletes=0'
 
 - name: Start Icinga2
   service: name=icinga2
