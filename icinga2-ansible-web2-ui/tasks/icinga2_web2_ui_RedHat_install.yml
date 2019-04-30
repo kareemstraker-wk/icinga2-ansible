@@ -31,21 +31,56 @@
 #   when: ansible_pkg_mgr == "dnf"
 
 - name: Create a IDO Database for Icinga2
-  mysql_db: name={{ icinga2_db }}
-            state=present
+  mysql_db:
+    name: "{{ icinga2_db }}"
+    state: present
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   register: icinga_ido_db
 
 - name: Create Icinga2 IDO Database User and configure Grants
-  mysql_user: name={{ icinga2_db_user }}
-              password={{ icinga2_db_pass }}
-              state=present
-              priv="{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE"
+  mysql_user:
+    name: "{{ icinga2_db_user }}"
+    host: "%"
+    password: "{{ icinga2_db_pass }}"
+    state: present
+    priv: "{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE,REQUIRESSL"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
+  # register: icinga_ido_db
+  # Removed this register because this always registers as changed and will
+  # attempt to re-run "Import the IDO Schema on Icinga Web Database (only once)"
+  # which will cause the play to fail. This will still get triggered off of DB
+  # creation.
 
 - name: Import the IDO Schema on Icinga Web Database (only once)
-  mysql_db: name={{ icinga2_db }}
-            state=import
-            target={{ icinga2_web_mysql_schema_rh }}
+  mysql_db:
+    name: "{{ icinga2_db }}"
+    state: import
+    target: "{{ icinga2_web_mysql_schema_debian }}"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   when: icinga_ido_db.changed == true
+
+# - name: Create a IDO Database for Icinga2
+#   mysql_db: name={{ icinga2_db }}
+#             state=present
+#   register: icinga_ido_db
+
+# - name: Create Icinga2 IDO Database User and configure Grants
+#   mysql_user: name={{ icinga2_db_user }}
+#               password={{ icinga2_db_pass }}
+#               state=present
+#               priv="{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE"
+
+# - name: Import the IDO Schema on Icinga Web Database (only once)
+#   mysql_db: name={{ icinga2_db }}
+#             state=import
+#             target={{ icinga2_web_mysql_schema_rh }}
+#   when: icinga_ido_db.changed == true
 
 - name: Configure Icinga2 Ido Mysql Feature
   template: src=ido-mysql.conf.j2
