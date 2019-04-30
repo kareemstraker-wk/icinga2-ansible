@@ -80,6 +80,7 @@
 - name: Download icinga2 files from S3
   aws_s3:
     mode: get
+    overwrite: always
     bucket: "{{ config_bucket }}"
     object: "{{ item }}"
     dest: "/tmp/{{ item|basename }}"
