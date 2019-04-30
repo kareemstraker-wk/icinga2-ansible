@@ -63,6 +63,13 @@
 #     - "icinga2-libs"
 #     - "icinga2-ido-mysql"
 
+- name: Install boto for aws_s3
+  pip:
+    name: "{{ item }}"
+  with_items:
+    - "botocore"
+    - "boto3"
+
 - name: Get list of icinga2 files from S3
   aws_s3:
     mode: list
