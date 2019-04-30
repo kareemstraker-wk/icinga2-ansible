@@ -142,13 +142,16 @@
     state: absent
     line: 'obsoletes=0'
 
-# - name: create icinga dir
-#   file:
-#     path: /etc/icinga2
-#     state: directory
-#     mode: 0755
-#     owner: nagios
-#     group: nagios
+- name: create icinga dir
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: nagios
+    group: nagios
+  with_items:
+    - /etc/icinga2
+    - /etc/icinga2/features-available
 
 - name: Start Icinga2
   service:
