@@ -83,19 +83,29 @@
       - botocore>1.12.0,<1.13.0
       - boto3>1.9.0<1.10.0
 
+- name: create icinga temp dirs
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0777
+  with_items:
+    - /tmp/rpm_main
+    - /tmp/rpm_ido
+
 - name: Clean icinga artifact path
   file:
     state: absent
     path: "{{ item }}"
   with_fileglob:
-    - "/tmp/*.rpm"
+    - "/tmp/rpm_main/*.rpm"
+    - "/tmp/rpm_ido/*.rpm"
 
 - name: Get list of icinga2 files from S3
   aws_s3:
     mode: list
     bucket: "{{ config_bucket }}"
-    prefix: "rpms/"
-    marker: "rpms/"
+    prefix: "rpm_main/"
+    marker: "rpm_main/"
   register: s3_bucket_items
 
 - name: Download icinga2 files from S3
@@ -104,18 +114,18 @@
     overwrite: always
     bucket: "{{ config_bucket }}"
     object: "{{ item }}"
-    dest: "/tmp/{{ item|basename }}"
+    dest: "/tmp/rpm_main/{{ item|basename }}"
   with_items: "{{ s3_bucket_items.s3_keys }}"
-
-# - name: Install Icinga2 on local RPM
-#   yum:
-#     name: "/tmp/{{ item|basename }}"
-#     state: present
-#   with_items: "{{ s3_bucket_items.s3_keys }}"
 
 - name: install icinga manually with shell
   shell: "sudo yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
-  chdir: /tmp/
+  chdir: /tmp/rpm_main
+
+# - name: Install Icinga2 on local RPM
+#   yum:
+#     name: "/tmp/rpm_main/{{ item|basename }}"
+#     state: present
+#   with_items: "{{ s3_bucket_items.s3_keys }}"
 
 - name: Unfix yum weirdness
   lineinfile:

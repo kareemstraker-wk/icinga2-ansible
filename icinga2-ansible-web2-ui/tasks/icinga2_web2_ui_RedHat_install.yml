@@ -1,13 +1,34 @@
 ---
-- name: Install Icinga2 IDO modules on RedHat OS family
-  yum: name=icinga2-ido-mysql
-       state=latest
-  when: ansible_pkg_mgr == "yum"
+- name: Get list of icinga2 (ido-mysql) files from S3
+  aws_s3:
+    mode: list
+    bucket: "{{ config_bucket }}"
+    prefix: "rpm_ido/"
+    marker: "rpm_ido/"
+  register: s3_bucket_items_ido
 
-- name: Install Icinga2 IDO modules on RedHat OS family (Fedora > 22)
-  dnf: name=icinga2-ido-mysql
-       state=latest
-  when: ansible_pkg_mgr == "dnf"
+- name: Download icinga2 (ido-mysql) files from S3
+  aws_s3:
+    mode: get
+    overwrite: always
+    bucket: "{{ config_bucket }}"
+    object: "{{ item }}"
+    dest: "/tmp/rpm_ido/{{ item|basename }}"
+  with_items: "{{ s3_bucket_items_ido.s3_keys }}"
+
+- name: install icinga (ido-mysql) manually with shell
+  shell: "sudo yum localinstall {{ s3_bucket_items_ido.s3_keys | map('basename') | join(' ') }}"
+  chdir: /tmp/rpm_ido
+
+# - name: Install Icinga2 IDO modules on RedHat OS family
+#   yum: name=icinga2-ido-mysql
+#        state=latest
+#   when: ansible_pkg_mgr == "yum"
+
+# - name: Install Icinga2 IDO modules on RedHat OS family (Fedora > 22)
+#   dnf: name=icinga2-ido-mysql
+#        state=latest
+#   when: ansible_pkg_mgr == "dnf"
 
 - name: Create a IDO Database for Icinga2
   mysql_db: name={{ icinga2_db }}
