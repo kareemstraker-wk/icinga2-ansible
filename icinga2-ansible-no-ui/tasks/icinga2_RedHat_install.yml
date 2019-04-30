@@ -38,16 +38,19 @@
     #     dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
 
-- name: yum-clean-metadata
-  command: yum clean metadata
-  args:
-    warn: no
+# - name: yum-clean-metadata
+#   command: yum clean metadata
+#   args:
+#     warn: no
 
-- name: Remove icinga2 repository (and clean up left-over metadata)
-  yum_repository:
-    name: icinga-stable-release
-    state: absent
-  notify: yum-clean-metadata
+# - name: Remove icinga2 repository (and clean up left-over metadata)
+#   yum_repository:
+#     name: icinga-stable-release
+#     state: absent
+#   notify: yum-clean-metadata
+
+- name: remove icinga yum repo manually
+  shell: sudo rm /etc/yum.repos.d/ICINGA-release.repo && sudo yum makecache
 
 - name: Fix yum weirdness
   lineinfile:
