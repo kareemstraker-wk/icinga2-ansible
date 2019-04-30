@@ -38,30 +38,52 @@
         dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
 
-- name: Install Icinga2 Deps yum OS family
-  yum:
-    name: "{{ item.package }}"
-    state: present
-    update_cache: yes
-  with_items: '{{ icinga2_yum_deps }}'
-
 # - name: Fix yum weirdness
 #   lineinfile:
 #     path: /etc/yum.conf
 #     state: present
 #     line: 'obsoletes=0'
 
-- name: Install Icinga2 on yum OS family
+# - name: Install Icinga2 Deps yum OS family
+#   yum:
+#     name: "{{ item.package }}"
+#     state: present
+#     update_cache: yes
+#   with_items: '{{ icinga2_yum_deps }}'
+
+# - name: Install Icinga2 on yum OS family
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#     update_cache: yes
+#   with_items:
+#     - "icinga2-common"
+#     - "icinga2-bin"
+#     - "icinga2"
+#     - "icinga2-libs"
+#     - "icinga2-ido-mysql"
+
+- name: Get list of icinga2 files from S3
+  aws_s3:
+    mode: list
+    bucket: "{{ config_bucket }}"
+    prefix: "rpms/"
+    marker: "rpms/"
+  register: s3_bucket_items
+
+- name: Download icinga2 files from S3
+  aws_s3:
+    mode: get
+    bucket: "{{ config_bucket }}"
+    object: "{{ item }}"
+    dest: "/tmp/{{ item|basename }}"
+  with_items: "{{ s3_bucket_items.s3_keys }}"
+
+- name: Install Icinga2 on local RPM
   yum:
-    name: "{{ item }}"
+    name: "/tmp/{{ item|basename }}"
     state: present
-    update_cache: yes
-  with_items:
-    - "icinga2-common"
-    - "icinga2-bin"
-    - "icinga2"
-    - "icinga2-libs"
-    - "icinga2-ido-mysql"
+  with_items: "{{ s3_bucket_items.s3_keys }}"
 
 # - name: Unfix yum weirdness
 #   lineinfile:
