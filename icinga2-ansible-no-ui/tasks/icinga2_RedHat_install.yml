@@ -128,8 +128,8 @@
     path: /etc/icinga2
     state: directory
     mode: 0755
-    owner: icinga
-    group: icinga
+    owner: nagios
+    group: nagios
 
 - name: Start Icinga2
   service:
