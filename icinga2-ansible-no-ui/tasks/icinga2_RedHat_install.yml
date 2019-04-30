@@ -26,17 +26,28 @@
     #   get_url: url='{{ icinga2_url_yum }}'
     #            dest={{ icinga2_repo_yum }}
 
-    - name: Set manually Icinga2 Yum Repo on RedHat OS family
-      copy:
-        content: |
-          [icinga-stable-release]
-          name=ICINGA (stable release for epel)
-          baseurl=http://packages.icinga.com/epel/7/release/
-          enabled=1
-          gpgcheck=1
-          gpgkey=https://packages.icinga.com/icinga.key
-        dest: "{{ icinga2_repo_yum }}"
+    # - name: Set manually Icinga2 Yum Repo on RedHat OS family
+    #   copy:
+    #     content: |
+    #       [icinga-stable-release]
+    #       name=ICINGA (stable release for epel)
+    #       baseurl=http://packages.icinga.com/epel/7/release/
+    #       enabled=1
+    #       gpgcheck=1
+    #       gpgkey=https://packages.icinga.com/icinga.key
+    #     dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
+
+- name: yum-clean-metadata
+  command: yum clean metadata
+  args:
+    warn: no
+
+- name: Remove icinga2 repository (and clean up left-over metadata)
+  yum_repository:
+    name: icinga-stable-release
+    state: absent
+  notify: yum-clean-metadata
 
 - name: Fix yum weirdness
   lineinfile:
