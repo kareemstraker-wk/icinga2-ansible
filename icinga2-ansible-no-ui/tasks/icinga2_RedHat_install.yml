@@ -74,7 +74,7 @@
     state: absent
     path: "{{ item }}"
   with_fileglob:
-    - "tmp/*.rpm"
+    - "/tmp/*.rpm"
 
 - name: Get list of icinga2 files from S3
   aws_s3:
