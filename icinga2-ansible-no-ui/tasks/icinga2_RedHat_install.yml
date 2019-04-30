@@ -124,6 +124,8 @@
     line: 'obsoletes=0'
 
 - name: Start Icinga2
-  service: name=icinga2
-           state=started
-           enabled=yes
+  service:
+    name: icinga2
+    state: started
+    enabled: yes
+  ignore_errors: yes
