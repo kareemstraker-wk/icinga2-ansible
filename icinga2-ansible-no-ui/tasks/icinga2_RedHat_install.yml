@@ -58,6 +58,15 @@
     state: present
     line: 'obsoletes=0'
 
+- name: Install Icinga pre-requirements
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mysql-devel
+    - python-devel
+    - MySQL-python
+
 # - name: Install Icinga2 Deps yum OS family
 #   yum:
 #     name: "{{ item.package }}"
