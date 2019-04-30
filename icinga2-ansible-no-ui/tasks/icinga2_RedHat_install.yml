@@ -50,7 +50,7 @@
 #   notify: yum-clean-metadata
 
 - name: remove icinga yum repo manually
-  shell: sudo rm /etc/yum.repos.d/ICINGA-release.repo && sudo yum makecache
+  shell: sudo rm -f /etc/yum.repos.d/ICINGA-release.repo && sudo yum makecache
 
 - name: Fix yum weirdness
   lineinfile:
