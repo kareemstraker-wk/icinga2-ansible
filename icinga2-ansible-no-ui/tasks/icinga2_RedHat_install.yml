@@ -50,7 +50,7 @@
 #   notify: yum-clean-metadata
 
 - name: remove icinga yum repo manually
-  shell: sudo rm -f /etc/yum.repos.d/ICINGA-release.repo && sudo yum makecache
+  shell: rm -f /etc/yum.repos.d/ICINGA-release.repo && yum makecache
 
 - name: Fix yum weirdness
   lineinfile:
@@ -127,7 +127,7 @@
   with_items: "{{ s3_bucket_items.s3_keys }}"
 
 - name: install icinga manually with shell
-  shell: "sudo yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
+  shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
   chdir: /tmp/rpm_main
 
 # - name: Install Icinga2 on local RPM
@@ -142,13 +142,13 @@
     state: absent
     line: 'obsoletes=0'
 
-- name: create icinga dir
-  file:
-    path: /etc/icinga2
-    state: directory
-    mode: 0755
-    owner: nagios
-    group: nagios
+# - name: create icinga dir
+#   file:
+#     path: /etc/icinga2
+#     state: directory
+#     mode: 0755
+#     owner: nagios
+#     group: nagios
 
 - name: Start Icinga2
   service:
