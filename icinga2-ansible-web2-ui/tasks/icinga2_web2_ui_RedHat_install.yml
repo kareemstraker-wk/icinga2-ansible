@@ -86,8 +86,8 @@
   template: src=ido-mysql.conf.j2
             dest={{ icinga2_ido_mysql_conf }}
             backup=yes
-            owner=icinga
-            group=icinga
+            owner=nagios
+            group=nagios
             mode=0640
   when: icinga2_ido_mysql_configuration is defined
 
