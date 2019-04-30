@@ -42,7 +42,7 @@
 - name: Create Icinga2 IDO Database User and configure Grants
   mysql_user:
     name: "{{ icinga2_db_user }}"
-    host: "%"
+    # host: "%"
     password: "{{ icinga2_db_pass }}"
     state: present
     priv: "{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE,REQUIRESSL"
