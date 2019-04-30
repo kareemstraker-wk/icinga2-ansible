@@ -65,12 +65,9 @@
 
 - name: Install boto for aws_s3
   pip:
-    name: "{{ item }}"
-  with_items:
-      - django>1.11.0,<1.12.0
-      - bottle>0.10,<0.20,!=0.11
-    - botocore
-    - boto3
+    name: 
+      - botocore>1.12.0,<1.13.0
+      - boto3>1.9.0<1.10.0
 
 - name: Get list of icinga2 files from S3
   aws_s3:
