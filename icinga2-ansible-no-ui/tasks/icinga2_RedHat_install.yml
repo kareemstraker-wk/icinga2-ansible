@@ -100,6 +100,7 @@
   with_items:
     - /tmp/rpm_main
     - /tmp/rpm_ido
+    - /tmp/rpm_web2
 
 - name: Clean icinga artifact path
   file:
