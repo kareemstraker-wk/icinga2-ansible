@@ -119,13 +119,7 @@
   register: s3_bucket_items_vendor
 
 - name: Download icinga2 (vendor) files from S3
-  aws_s3:
-    mode: get
-    overwrite: always
-    bucket: "{{ config_bucket }}"
-    object: "{{ item }}"
-    dest: "/tmp/rpm_vendor/{{ item|basename }}"
-  with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
+  command: aws s3 cp {{ config_bucket }}/rpm_vendor /tmp/rpm_vendor --recursive
 
 # - name: install icinga2 (vendor) manually with shell
 #   shell: "yum localinstall {{ s3_bucket_items_vendor.s3_keys | map('basename') | join(' ') }}"

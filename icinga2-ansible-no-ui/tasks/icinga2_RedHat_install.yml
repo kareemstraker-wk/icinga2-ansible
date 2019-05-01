@@ -88,7 +88,7 @@
 
 - name: Install boto for aws_s3
   pip:
-    name: 
+    name:
       - botocore>1.12.0,<1.13.0
       - boto3>1.9.0<1.10.0
 
@@ -110,6 +110,8 @@
   with_fileglob:
     - "/tmp/rpm_main/*.rpm"
     - "/tmp/rpm_ido/*.rpm"
+    - "/tmp/rpm_web2/*.rpm"
+    - "/tmp/rpm_vendor/*.rpm"
 
 - name: Get list of icinga2 files from S3
   aws_s3:
