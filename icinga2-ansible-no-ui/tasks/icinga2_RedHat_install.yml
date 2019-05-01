@@ -126,15 +126,15 @@
     dest: "/tmp/rpm_main/{{ item|basename }}"
   with_items: "{{ s3_bucket_items.s3_keys }}"
 
-- name: install icinga manually with shell
-  shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
-  chdir: /tmp/rpm_main
+# - name: install icinga manually with shell
+#   shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_main
 
-# - name: Install Icinga2 on local RPM
-#   yum:
-#     name: "/tmp/rpm_main/{{ item|basename }}"
-#     state: present
-#   with_items: "{{ s3_bucket_items.s3_keys }}"
+- name: Install Icinga2 on local RPM
+  yum:
+    name: "/tmp/rpm_main/{{ item|basename }}"
+    state: present
+  with_items: "{{ s3_bucket_items.s3_keys }}"
 
 - name: Unfix yum weirdness
   lineinfile:
