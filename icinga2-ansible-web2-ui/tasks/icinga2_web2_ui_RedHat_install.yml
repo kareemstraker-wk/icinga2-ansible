@@ -153,16 +153,10 @@
   register: s3_bucket_items_web2
 
 - name: Download icinga2 (web2) files from S3
-  aws_s3:
-    mode: get
-    overwrite: always
-    bucket: "{{ config_bucket }}"
-    object: "{{ item }}"
-    dest: "/tmp/rpm_web2/{{ item|basename }}"
-  with_items: "{{ s3_bucket_items_web2.s3_keys }}"
+  command: aws s3 cp s3://{{ config_bucket }}/rpm_web2 /tmp/rpm_web2 --recursive
 
 - name: install icinga2 (web2) manually with shell
-  shell: "yum localinstall {{ s3_bucket_items_web2.s3_keys | map('basename') | join(' ') }}"
+  shell: "yum localinstall {{ s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys| map('basename') | join(' ') }}"
   chdir: /tmp/rpm_web2
 
 # - name: Install Icinga2 (web2) on local RPM
