@@ -121,15 +121,15 @@
 - name: Download icinga2 (vendor) files from S3
   command: aws s3 cp s3://{{ config_bucket }}/rpm_vendor /tmp/rpm_vendor --recursive
 
-# - name: install icinga2 (vendor) manually with shell
-#   shell: "yum localinstall {{ s3_bucket_items_vendor.s3_keys | map('basename') | join(' ') }}"
-#   chdir: /tmp/rpm_vendor
-
-- name: Install Icinga2 (vendor) on local RPM
-  yum:
-    name: "/tmp/rpm_vendor/{{ item|basename }}"
-    state: present
-  with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
+- name: install icinga2 (vendor) manually with shell
+  shell: "yum localinstall {{ s3_bucket_items_vendor.s3_keys | map('basename') | join(' ') }}"
+  chdir: /tmp/rpm_vendor
+#
+# - name: Install Icinga2 (vendor) on local RPM
+#   yum:
+#     name: "/tmp/rpm_vendor/{{ item|basename }}"
+#     state: present
+#   with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
 
 # - name: Install Icinga Web2 on RedHat OS family
 #   yum: name={{ item.package }}
