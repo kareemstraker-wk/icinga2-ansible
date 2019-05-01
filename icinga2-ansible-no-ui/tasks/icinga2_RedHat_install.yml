@@ -101,6 +101,7 @@
     - /tmp/rpm_main
     - /tmp/rpm_ido
     - /tmp/rpm_web2
+    - /tmp/rpm_vendor
 
 - name: Clean icinga artifact path
   file:

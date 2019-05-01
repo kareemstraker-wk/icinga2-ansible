@@ -110,6 +110,33 @@
   notify:
    - restart icinga2
 
+- name: Get list of icinga2 (vendor) files from S3
+  aws_s3:
+    mode: list
+    bucket: "{{ config_bucket }}"
+    prefix: "rpm_vendor/"
+    marker: "rpm_vendor/"
+  register: s3_bucket_items_vendor
+
+- name: Download icinga2 (vendor) files from S3
+  aws_s3:
+    mode: get
+    overwrite: always
+    bucket: "{{ config_bucket }}"
+    object: "{{ item }}"
+    dest: "/tmp/rpm_vendor/{{ item|basename }}"
+  with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
+
+# - name: install icinga2 (vendor) manually with shell
+#   shell: "yum localinstall {{ s3_bucket_items_vendor.s3_keys | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_vendor
+
+- name: Install Icinga2 (vendor) on local RPM
+  yum:
+    name: "/tmp/rpm_vendor/{{ item|basename }}"
+    state: present
+  with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
+
 # - name: Install Icinga Web2 on RedHat OS family
 #   yum: name={{ item.package }}
 #        state=latest
