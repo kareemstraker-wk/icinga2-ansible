@@ -16,7 +16,7 @@
     dest: "/tmp/rpm_ido/{{ item|basename }}"
   with_items: "{{ s3_bucket_items_ido.s3_keys }}"
 
-# - name: install icinga (ido-mysql) manually with shell
+# - name: install icinga2 (ido-mysql) manually with shell
 #   shell: "yum localinstall {{ s3_bucket_items_ido.s3_keys | map('basename') | join(' ') }}"
 #   chdir: /tmp/rpm_ido
 
@@ -110,22 +110,48 @@
   notify:
    - restart icinga2
 
-- name: Install Icinga Web2 on RedHat OS family
-  yum: name={{ item.package }}
-       state=latest
-       enablerepo={{ enablerepo }}
-  with_items: "{{ icinga2_web2_ui_rpm }}"
-  tags: icinga2-ansible-web2-ui-install
-  when: ansible_pkg_mgr == "yum"
+# - name: Install Icinga Web2 on RedHat OS family
+#   yum: name={{ item.package }}
+#        state=latest
+#        enablerepo={{ enablerepo }}
+#   with_items: "{{ icinga2_web2_ui_rpm }}"
+#   tags: icinga2-ansible-web2-ui-install
+#   when: ansible_pkg_mgr == "yum"
 
-- name: Install Icinga Web2 on RedHat OS family
-  dnf: name={{ item.package }}
-       state=latest
-       enablerepo={{ enablerepo }}
-  with_items: "{{ icinga2_web2_ui_rpm }}"
-  tags: icinga2-ansible-web2-ui-install
-  when: ansible_pkg_mgr == "dnf"
+# - name: Install Icinga Web2 on RedHat OS family
+#   dnf: name={{ item.package }}
+#        state=latest
+#        enablerepo={{ enablerepo }}
+#   with_items: "{{ icinga2_web2_ui_rpm }}"
+#   tags: icinga2-ansible-web2-ui-install
+#   when: ansible_pkg_mgr == "dnf"
 
+- name: Get list of icinga2 (web2) files from S3
+  aws_s3:
+    mode: list
+    bucket: "{{ config_bucket }}"
+    prefix: "rpm_web2/"
+    marker: "rpm_web2/"
+  register: s3_bucket_items_web2
+
+- name: Download icinga2 (web2) files from S3
+  aws_s3:
+    mode: get
+    overwrite: always
+    bucket: "{{ config_bucket }}"
+    object: "{{ item }}"
+    dest: "/tmp/rpm_web2/{{ item|basename }}"
+  with_items: "{{ s3_bucket_items_web2.s3_keys }}"
+
+# - name: install icinga2 (web2) manually with shell
+#   shell: "yum localinstall {{ s3_bucket_items_web2.s3_keys | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_web2
+
+# - name: Install Icinga2 (web2) on local RPM
+#   yum:
+#     name: "/tmp/rpm_web2/{{ item|basename }}"
+#     state: present
+#   with_items: "{{ s3_bucket_items_web2.s3_keys }}"
 
 - name: Create a Web Database for Icinga2
   mysql_db:
