@@ -20,11 +20,11 @@
 #   shell: "yum localinstall {{ s3_bucket_items_ido.s3_keys | map('basename') | join(' ') }}"
 #   chdir: /tmp/rpm_ido
 
-- name: Install Icinga2 on local RPM
+- name: Install Icinga2 (ido-mysql) on local RPM
   yum:
     name: "/tmp/rpm_ido/{{ item|basename }}"
     state: present
-  with_items: "{{ s3_bucket_items.s3_keys }}"
+  with_items: "{{ s3_bucket_items_ido.s3_keys }}"
 
 - name: Install Icinga2 IDO modules on RedHat OS family
   yum:
