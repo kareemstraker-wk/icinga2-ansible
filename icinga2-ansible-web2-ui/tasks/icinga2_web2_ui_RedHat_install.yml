@@ -1,4 +1,9 @@
 ---
+- name: install mysql client
+  yum:
+    name: mariadb
+    state: present
+
 - name: Get list of icinga2 (ido-mysql) files from S3
   aws_s3:
     mode: list
