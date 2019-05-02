@@ -157,11 +157,12 @@
 
 - name: install icinga2 (web2) manually with shell- log
   debug:
-    msg: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+    msg: "yum -y localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
 
 - name: install icinga2 (web2) manually with shell
-  shell: "yum -y localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
-  chdir: /tmp/rpm_web2
+  command: "yum -y localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+  args:
+    chdir: /tmp/rpm_web2
 
 # - name: Install Icinga2 (web2) on local RPM
 #   yum:
