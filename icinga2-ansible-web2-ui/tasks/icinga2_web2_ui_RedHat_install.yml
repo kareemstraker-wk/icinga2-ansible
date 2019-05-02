@@ -213,6 +213,7 @@
   with_items:
     - "{{ web_server_daemon }}"
     - icinga2
+    - rh-php71-php-fpm
   ignore_errors: yes
 
 - name: Icinga Web2 Installation finished (RH)
