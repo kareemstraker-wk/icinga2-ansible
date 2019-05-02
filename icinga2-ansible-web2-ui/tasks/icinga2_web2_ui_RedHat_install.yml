@@ -155,6 +155,10 @@
 - name: Download icinga2 (web2) files from S3
   command: aws s3 cp s3://{{ config_bucket }}/rpm_web2 /tmp/rpm_web2 --recursive
 
+- name: install icinga2 (web2) manually with shell- log
+  debug:
+    msg: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+
 - name: install icinga2 (web2) manually with shell
   shell: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
   chdir: /tmp/rpm_web2
@@ -213,8 +217,13 @@
   with_items:
     - "{{ web_server_daemon }}"
     - icinga2
-    - rh-php71-php-fpm
   ignore_errors: yes
+
+- name: Start PHP FPM
+  service:
+    name: rh-php71-php-fpm
+    state: started
+    enabled: yes
 
 - name: Icinga Web2 Installation finished (RH)
   debug: msg="Now generate a token with 'icingacli setup token create' and go at http://IP//icingaweb2/setup to continue the installation"
