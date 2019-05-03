@@ -11,46 +11,96 @@
   pip:
     name: ndg-httpsclient
     version: 0.4.3
+
 - name: Get Public Yum Repo
   block:
     - name: Get Icinga2 Yum Key on RedHat OS family
       rpm_key: key={{ icinga2_key }}
                state=present
 
-    # - name: Get Icinga2 Yum Repo on RedHat OS family (Fedora)
-    #   get_url: url='{{ icinga2_url_yum_fedora }}'
-    #            dest={{ icinga2_repo_yum }}
-    #   when: ansible_distribution == 'Fedora'
+    - name: Get Icinga2 Yum Repo on RedHat OS family (Fedora)
+      get_url: url='{{ icinga2_url_yum_fedora }}'
+               dest={{ icinga2_repo_yum }}
+      when: ansible_distribution == 'Fedora'
 
-    # - name: Get Icinga2 Yum Repo on RedHat OS family
-    #   get_url: url='{{ icinga2_url_yum }}'
-    #            dest={{ icinga2_repo_yum }}
+    - name: Get Icinga2 Yum Repo on RedHat OS family
+      get_url: url='{{ icinga2_url_yum }}'
+               dest={{ icinga2_repo_yum }}
 
-    # - name: Set manually Icinga2 Yum Repo on RedHat OS family
-    #   copy:
-    #     content: |
-    #       [icinga-stable-release]
-    #       name=ICINGA (stable release for epel)
-    #       baseurl=http://packages.icinga.com/epel/7/release/
-    #       enabled=1
-    #       gpgcheck=1
-    #       gpgkey=https://packages.icinga.com/icinga.key
-    #     dest: "{{ icinga2_repo_yum }}"
+    - name: Set manually Icinga2 Yum Repo on RedHat OS family
+      copy:
+        content: |
+          [icinga-stable-release]
+          name=ICINGA (stable release for epel)
+          baseurl=http://packages.icinga.com/epel/7/release/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://packages.icinga.com/icinga.key
+        dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
 
-# - name: yum-clean-metadata
-#   command: yum clean metadata
-#   args:
-#     warn: no
+- name: Download local Yum artifact packages and unzip
+  block:
+    # - name: yum-clean-metadata
+    #   command: yum clean metadata
+    #   args:
+    #     warn: no
 
-# - name: Remove icinga2 repository (and clean up left-over metadata)
-#   yum_repository:
-#     name: icinga-stable-release
-#     state: absent
-#   notify: yum-clean-metadata
+    # - name: Remove icinga2 repository (and clean up left-over metadata)
+    #   yum_repository:
+    #     name: icinga-stable-release
+    #     state: absent
+    #   notify: yum-clean-metadata
 
-- name: remove icinga yum repo manually
-  shell: rm -f /etc/yum.repos.d/ICINGA-release.repo && yum makecache
+    - name: remove icinga yum repo manually, if present
+      shell: rm -f /etc/yum.repos.d/ICINGA-release.repo && yum makecache
+
+    - name: create icinga temp dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0777
+      with_items:
+        - /tmp/rpm_main
+        - /tmp/rpm_ido
+        - /tmp/rpm_web2
+        - /tmp/rpm_vendor
+
+    - name: Clean icinga artifact path
+      file:
+        state: absent
+        path: "{{ item }}"
+      with_fileglob:
+        - "/tmp/rpm_*.zip"
+        - "/tmp/rpm_main/*.rpm"
+        - "/tmp/rpm_ido/*.rpm"
+        - "/tmp/rpm_web2/*.rpm"
+        - "/tmp/rpm_vendor/*.rpm"
+
+    - name: Get list of icinga2 (zip) files from S3
+      aws_s3:
+        mode: list
+        bucket: "{{ config_bucket }}"
+        prefix: "rpm_"
+        marker: "rpm_"
+      register: s3_bucket_items_zip
+
+    - name: Download icinga2 (zip) files from S3
+      aws_s3:
+        mode: get
+        overwrite: always
+        bucket: "{{ config_bucket }}"
+        object: "{{ item }}"
+        dest: "/tmp/{{ item|basename }}"
+      with_items: "{{ s3_bucket_items_zip.s3_keys }}"
+
+    - name: Unarchive icinga2 (zip) files
+      unarchive:
+        src: "{{ item }}"
+        dest: "/tmp/{{ item|basename.split('.')[0] }}"
+        remote_src: yes
+      with_items: "{{ s3_bucket_items_zip.s3_keys }}"
+  when: not icinga2_use_public_yum_repo
 
 - name: Fix yum weirdness
   lineinfile:
@@ -92,53 +142,39 @@
       - botocore>1.12.0,<1.13.0
       - boto3>1.9.0<1.10.0
 
-- name: create icinga temp dirs
-  file:
-    path: "{{ item }}"
-    state: directory
-    mode: 0777
-  with_items:
-    - /tmp/rpm_main
-    - /tmp/rpm_ido
-    - /tmp/rpm_web2
-    - /tmp/rpm_vendor
+# - name: Get list of icinga2 (main) files from S3
+#   aws_s3:
+#     mode: list
+#     bucket: "{{ config_bucket }}"
+#     prefix: "rpm_main/"
+#     marker: "rpm_main/"
+#   register: s3_bucket_items
 
-- name: Clean icinga artifact path
-  file:
-    state: absent
-    path: "{{ item }}"
-  with_fileglob:
-    - "/tmp/rpm_main/*.rpm"
-    - "/tmp/rpm_ido/*.rpm"
-    - "/tmp/rpm_web2/*.rpm"
-    - "/tmp/rpm_vendor/*.rpm"
+# - name: Download icinga2 (main) files from S3
+#   aws_s3:
+#     mode: get
+#     overwrite: always
+#     bucket: "{{ config_bucket }}"
+#     object: "{{ item }}"
+#     dest: "/tmp/rpm_main/{{ item|basename }}"
+#   with_items: "{{ s3_bucket_items.s3_keys }}"
 
-- name: Get list of icinga2 files from S3
-  aws_s3:
-    mode: list
-    bucket: "{{ config_bucket }}"
-    prefix: "rpm_main/"
-    marker: "rpm_main/"
-  register: s3_bucket_items
+- name: Get list of (main) files local
+  find:
+    paths: /tmp/rpm_main
+    pattern: ".rpm"
+    recurse: no
+  register: rpm_main_files
 
-- name: Download icinga2 files from S3
-  aws_s3:
-    mode: get
-    overwrite: always
-    bucket: "{{ config_bucket }}"
-    object: "{{ item }}"
-    dest: "/tmp/rpm_main/{{ item|basename }}"
-  with_items: "{{ s3_bucket_items.s3_keys }}"
-
-# - name: install icinga2 manually with shell
-#   shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
-#   chdir: /tmp/rpm_main
-
-- name: Install Icinga2 on local RPM
+- name: Install Icinga2 (main) on local RPM
   yum:
     name: "/tmp/rpm_main/{{ item|basename }}"
     state: present
-  with_items: "{{ s3_bucket_items.s3_keys }}"
+  with_items: "{{ rpm_main_files.files }}"
+
+# - name: install icinga2 (main) manually with shell
+#   shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_main
 
 - name: Unfix yum weirdness
   lineinfile:

@@ -1,30 +1,37 @@
 ---
-- name: Get list of icinga2 (ido-mysql) files from S3
-  aws_s3:
-    mode: list
-    bucket: "{{ config_bucket }}"
-    prefix: "rpm_ido/"
-    marker: "rpm_ido/"
-  register: s3_bucket_items_ido
+# - name: Get list of icinga2 (ido-mysql) files from S3
+#   aws_s3:
+#     mode: list
+#     bucket: "{{ config_bucket }}"
+#     prefix: "rpm_ido/"
+#     marker: "rpm_ido/"
+#   register: s3_bucket_items_ido
 
-- name: Download icinga2 (ido-mysql) files from S3
-  aws_s3:
-    mode: get
-    overwrite: always
-    bucket: "{{ config_bucket }}"
-    object: "{{ item }}"
-    dest: "/tmp/rpm_ido/{{ item|basename }}"
-  with_items: "{{ s3_bucket_items_ido.s3_keys }}"
+# - name: Download icinga2 (ido-mysql) files from S3
+#   aws_s3:
+#     mode: get
+#     overwrite: always
+#     bucket: "{{ config_bucket }}"
+#     object: "{{ item }}"
+#     dest: "/tmp/rpm_ido/{{ item|basename }}"
+#   with_items: "{{ s3_bucket_items_ido.s3_keys }}"
 
-# - name: install icinga2 (ido-mysql) manually with shell
-#   shell: "yum localinstall {{ s3_bucket_items_ido.s3_keys | map('basename') | join(' ') }}"
-#   chdir: /tmp/rpm_ido
+- name: Get list of (ido-mysql) files local
+  find:
+    paths: /tmp/rpm_ido
+    pattern: ".rpm"
+    recurse: no
+  register: rpm_ido_files
 
 - name: Install Icinga2 (ido-mysql) on local RPM
   yum:
     name: "/tmp/rpm_ido/{{ item|basename }}"
     state: present
-  with_items: "{{ s3_bucket_items_ido.s3_keys }}"
+  with_items: "{{ rpm_ido_files.files }}"
+
+# - name: install icinga2 (ido-mysql) manually with shell
+#   shell: "yum localinstall {{ s3_bucket_items_ido.s3_keys | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_ido
 
 - name: Install Icinga2 IDO modules on RedHat OS family
   yum:
@@ -110,23 +117,29 @@
   notify:
    - restart icinga2
 
-- name: Get list of icinga2 (vendor) files from S3
-  aws_s3:
-    mode: list
-    bucket: "{{ config_bucket }}"
-    prefix: "rpm_vendor/"
-    marker: "rpm_vendor/"
-  register: s3_bucket_items_vendor
+# - name: Get list of icinga2 (vendor) files from S3
+#   aws_s3:
+#     mode: list
+#     bucket: "{{ config_bucket }}"
+#     prefix: "rpm_vendor/"
+#     marker: "rpm_vendor/"
+#   register: s3_bucket_items_vendor
 
-- name: Download icinga2 (vendor) files from S3
-  command: aws s3 cp s3://{{ config_bucket }}/rpm_vendor /tmp/rpm_web2 --recursive
+# - name: Download icinga2 (vendor) files from S3
+#   command: aws s3 cp s3://{{ config_bucket }}/rpm_vendor /tmp/rpm_web2 --recursive
 
-#
-# - name: Install Icinga2 (vendor) on local RPM
-#   yum:
-#     name: "/tmp/rpm_vendor/{{ item|basename }}"
-#     state: present
-#   with_items: "{{ s3_bucket_items_vendor.s3_keys }}"
+- name: Get list of (vendor) files local
+  find:
+    paths: /tmp/rpm_vendor
+    pattern: ".rpm"
+    recurse: no
+  register: rpm_vendor_files
+
+- name: Install Icinga2 (vendor) on local RPM
+  yum:
+    name: "/tmp/rpm_vendor/{{ item|basename }}"
+    state: present
+  with_items: "{{ rpm_vendor_files.files }}"
 
 # - name: Install Icinga Web2 on RedHat OS family
 #   yum: name={{ item.package }}
@@ -144,26 +157,39 @@
 #   tags: icinga2-ansible-web2-ui-install
 #   when: ansible_pkg_mgr == "dnf"
 
-- name: Get list of icinga2 (web2) files from S3
-  aws_s3:
-    mode: list
-    bucket: "{{ config_bucket }}"
-    prefix: "rpm_web2/"
-    marker: "rpm_web2/"
-  register: s3_bucket_items_web2
+# - name: Get list of icinga2 (web2) files from S3
+#   aws_s3:
+#     mode: list
+#     bucket: "{{ config_bucket }}"
+#     prefix: "rpm_web2/"
+#     marker: "rpm_web2/"
+#   register: s3_bucket_items_web2
 
-- name: Download icinga2 (web2) files from S3
-  command: aws s3 cp s3://{{ config_bucket }}/rpm_web2 /tmp/rpm_web2 --recursive
+# - name: Download icinga2 (web2) files from S3
+#   command: aws s3 cp s3://{{ config_bucket }}/rpm_web2 /tmp/rpm_web2 --recursive
 
-- name: install icinga2 (web2) manually with shell
-  shell: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
-  chdir: /tmp/rpm_web2
+# - name: install icinga2 (web2) manually with shell
+#   shell: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+#   chdir: /tmp/rpm_web2
 
 # - name: Install Icinga2 (web2) on local RPM
 #   yum:
 #     name: "/tmp/rpm_web2/{{ item|basename }}"
 #     state: present
 #   with_items: "{{ s3_bucket_items_web2.s3_keys }}"
+
+- name: Get list of (web2) files local
+  find:
+    paths: /tmp/rpm_web2
+    pattern: ".rpm"
+    recurse: no
+  register: rpm_web2_files
+
+- name: Install Icinga2 (web2) on local RPM
+  yum:
+    name: "/tmp/rpm_web2/{{ item|basename }}"
+    state: present
+  with_items: "{{ rpm_web2_files.files }}"
 
 - name: Create a Web Database for Icinga2
   mysql_db:
