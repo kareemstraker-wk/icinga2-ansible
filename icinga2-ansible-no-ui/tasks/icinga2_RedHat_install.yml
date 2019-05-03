@@ -166,15 +166,15 @@
     recurse: no
   register: rpm_main_files
 
-- name: Install Icinga2 (main) on local RPM
-  yum:
-    name: "/tmp/rpm_main/{{ item }}"
-    state: present
-  with_items: "{{ rpm_main_files.files }}"
+# - name: Install Icinga2 (main) on local RPM
+#   yum:
+#     name: "/tmp/rpm_main/{{ item }}"
+#     state: present
+#   with_items: "{{ rpm_main_files.files }}"
 
-# - name: install icinga2 (main) manually with shell
-#   shell: "yum localinstall {{ s3_bucket_items.s3_keys | map('basename') | join(' ') }}"
-#   chdir: /tmp/rpm_main
+- name: install icinga2 (main) manually with shell
+  shell: "yum localinstall {{ rpm_main_files.files | map('basename') | join(' ') }}"
+  chdir: /tmp/rpm_main
 
 - name: Unfix yum weirdness
   lineinfile:
