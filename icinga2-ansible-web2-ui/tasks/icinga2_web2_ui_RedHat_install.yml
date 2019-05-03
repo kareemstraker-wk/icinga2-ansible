@@ -30,7 +30,7 @@
 
 - name: Install Icinga2 (ido-mysql) on local RPM
   yum:
-    name: "/tmp/rpm_ido/{{ item|basename }}"
+    name: "/tmp/rpm_ido/{{ item }}"
     state: present
   with_items: "{{ rpm_ido_files.files }}"
 
@@ -142,7 +142,7 @@
 
 - name: Install Icinga2 (vendor) on local RPM
   yum:
-    name: "/tmp/rpm_vendor/{{ item|basename }}"
+    name: "/tmp/rpm_vendor/{{ item }}"
     state: present
   with_items: "{{ rpm_vendor_files.files }}"
 
@@ -197,7 +197,7 @@
 
 - name: Install Icinga2 (web2) on local RPM
   yum:
-    name: "/tmp/rpm_web2/{{ item|basename }}"
+    name: "/tmp/rpm_web2/{{ item }}"
     state: present
   with_items: "{{ rpm_web2_files.files }}"
 

@@ -168,7 +168,7 @@
 
 - name: Install Icinga2 (main) on local RPM
   yum:
-    name: "/tmp/rpm_main/{{ item|basename }}"
+    name: "/tmp/rpm_main/{{ item }}"
     state: present
   with_items: "{{ rpm_main_files.files }}"
 
