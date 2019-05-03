@@ -173,7 +173,7 @@
 #   with_items: "{{ rpm_main_files.files }}"
 
 - name: install icinga2 (main) manually with shell
-  shell: "yum -y localinstall {{ rpm_main_files.files | map('basename') | join(' ') }}"
+  shell: "yum -y localinstall {{ rpm_main_files.files | map(attribute='path') | list }}"
   chdir: /tmp/rpm_main
 
 - name: Unfix yum weirdness
