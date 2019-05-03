@@ -24,7 +24,7 @@
 - name: Get list of (ido-mysql) files local
   find:
     paths: /tmp/rpm_ido
-    pattern: ".rpm"
+    pattern: "*.rpm"
     recurse: no
   register: rpm_ido_files
 
@@ -35,7 +35,7 @@
 #   with_items: "{{ rpm_ido_files.files }}"
 
 - name: install icinga2 (ido-mysql) manually with shell
-  shell: "yum localinstall {{ rpm_ido_files.files | map('basename') | join(' ') }}"
+  shell: "yum localinstall {{ rpm_ido_files.files | map(attribute='path') | join(' ') }}"
   chdir: /tmp/rpm_ido
 
 - name: Install Icinga2 IDO modules on RedHat OS family
@@ -136,7 +136,7 @@
 - name: Get list of (vendor) files local
   find:
     paths: /tmp/rpm_vendor
-    pattern: ".rpm"
+    pattern: "*.rpm"
     recurse: no
   register: rpm_vendor_files
 
@@ -147,7 +147,7 @@
 #   with_items: "{{ rpm_vendor_files.files }}"
 
 - name: install icinga2 (vendor) manually with shell
-  shell: "yum localinstall {{ rpm_vendor_files.files | map('basename') | join(' ') }}"
+  shell: "yum localinstall {{ rpm_vendor_files.files | map(attribute='path') | join(' ') }}"
   chdir: /tmp/rpm_vendor
 
 # - name: Install Icinga Web2 on RedHat OS family
@@ -195,7 +195,7 @@
 - name: Get list of (web2) files local
   find:
     paths: /tmp/rpm_web2
-    pattern: ".rpm"
+    pattern: "*.rpm"
     recurse: no
   register: rpm_web2_files
 
@@ -206,7 +206,7 @@
 #   with_items: "{{ rpm_web2_files.files }}"
 
 - name: install icinga2 (web2) manually with shell
-  shell: "yum localinstall {{ rpm_web2_files.files | map('basename') | join(' ') }}"
+  shell: "yum localinstall {{ rpm_web2_files.files | map(attribute='path') | join(' ') }}"
   chdir: /tmp/rpm_web2
 
 - name: Create a Web Database for Icinga2
