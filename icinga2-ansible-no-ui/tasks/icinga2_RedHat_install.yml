@@ -162,7 +162,7 @@
 - name: Get list of (main) files local
   find:
     paths: /tmp/rpm_main
-    pattern: ".rpm"
+    pattern: "*.rpm"
     recurse: no
   register: rpm_main_files
 
