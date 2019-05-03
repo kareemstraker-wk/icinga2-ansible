@@ -16,6 +16,11 @@
 #     dest: "/tmp/rpm_ido/{{ item|basename }}"
 #   with_items: "{{ s3_bucket_items_ido.s3_keys }}"
 
+- name: install mysql client
+  yum:
+    name: mariadb
+    state: present
+
 - name: Get list of (ido-mysql) files local
   find:
     paths: /tmp/rpm_ido
@@ -105,8 +110,8 @@
   template: src=ido-mysql.conf.j2
             dest={{ icinga2_ido_mysql_conf }}
             backup=yes
-            owner=nagios
-            group=nagios
+            owner=icinga
+            group=icinga
             mode=0640
   when: icinga2_ido_mysql_configuration is defined
 
@@ -168,9 +173,14 @@
 # - name: Download icinga2 (web2) files from S3
 #   command: aws s3 cp s3://{{ config_bucket }}/rpm_web2 /tmp/rpm_web2 --recursive
 
+# - name: install icinga2 (web2) manually with shell- log
+#   debug:
+#     msg: "yum -y localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+
 # - name: install icinga2 (web2) manually with shell
-#   shell: "yum localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
-#   chdir: /tmp/rpm_web2
+#   command: "yum -y localinstall {{ (s3_bucket_items_web2.s3_keys + s3_bucket_items_vendor.s3_keys) | map('basename') | join(' ') }}"
+#   args:
+#     chdir: /tmp/rpm_web2
 
 # - name: Install Icinga2 (web2) on local RPM
 #   yum:
@@ -215,7 +225,7 @@
   mysql_db:
     name: "{{ icinga2_web2_db }}"
     state: import
-    target: "{{ icinga2_web2_mysql_schema_debian }}"
+    target: "{{ icinga2_web2_mysql_schema_rh }}"
     login_host: "{{ db_host }}"
     login_user: "{{ db_root_username }}"
     login_password: "{{ db_root_password }}"
@@ -239,8 +249,13 @@
   with_items:
     - "{{ web_server_daemon }}"
     - icinga2
-    - rh-php71-php-fpm
   ignore_errors: yes
+
+- name: Start PHP FPM
+  service:
+    name: rh-php71-php-fpm
+    state: started
+    enabled: yes
 
 - name: Icinga Web2 Installation finished (RH)
   debug: msg="Now generate a token with 'icingacli setup token create' and go at http://IP//icingaweb2/setup to continue the installation"
