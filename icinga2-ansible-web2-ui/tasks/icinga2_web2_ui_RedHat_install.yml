@@ -206,7 +206,7 @@
 #   with_items: "{{ rpm_web2_files.files }}"
 
 - name: install icinga2 (web2) manually with shell
-  shell: "yum -y localinstall {{ (rpm_web2_files.files + rpm_web2_files.files) | map(attribute='path') | join(' ') }}"
+  shell: "yum -y localinstall {{ (rpm_web2_files.files + rpm_vendor_files.files) | map(attribute='path') | join(' ') }}"
   chdir: /tmp/rpm_web2
 
 - name: Create a Web Database for Icinga2
