@@ -151,8 +151,8 @@
     path: "{{ item }}"
     state: directory
     mode: 0755
-    owner: nagios
-    group: nagios
+    owner: icinga
+    group: icinga
   with_items:
     - /etc/icinga2
     - /etc/icinga2/features-available
