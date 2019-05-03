@@ -1,4 +1,19 @@
 ---
+- name: Install boto for aws_s3
+  pip:
+    name:
+      - botocore>1.12.0,<1.13.0
+      - boto3>1.9.0<1.10.0
+
+- name: Install Icinga pre-requirements
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mysql-devel
+    - python-devel
+    - MySQL-python
+
 - name: install pyasn1
   pip:
     name: pyasn1
@@ -108,15 +123,6 @@
     state: present
     line: 'obsoletes=0'
 
-- name: Install Icinga pre-requirements
-  yum:
-    name: "{{ packages }}"
-  vars:
-    packages:
-    - mysql-devel
-    - python-devel
-    - MySQL-python
-
 # - name: Install Icinga2 Deps yum OS family
 #   yum:
 #     name: "{{ item.package }}"
@@ -135,12 +141,6 @@
 #     - "icinga2"
 #     - "icinga2-libs"
 #     - "icinga2-ido-mysql"
-
-- name: Install boto for aws_s3
-  pip:
-    name:
-      - botocore>1.12.0,<1.13.0
-      - boto3>1.9.0<1.10.0
 
 # - name: Get list of icinga2 (main) files from S3
 #   aws_s3:
