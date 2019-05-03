@@ -97,7 +97,7 @@
     - name: Unarchive icinga2 (zip) files
       unarchive:
         src: "{{ item }}"
-        dest: "/tmp/{{ item|basename.split('.')[0] }}"
+        dest: "/tmp/{{ item|basename|splitext|first }}"
         remote_src: yes
       with_items: "{{ s3_bucket_items_zip.s3_keys }}"
   when: not icinga2_use_public_yum_repo
