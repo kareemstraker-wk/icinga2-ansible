@@ -96,7 +96,7 @@
 
     - name: Unarchive icinga2 (zip) files
       unarchive:
-        src: "{{ item }}"
+        src: "/tmp/{{ item }}"
         dest: "/tmp/{{ item|basename|splitext|first }}"
         remote_src: yes
       with_items: "{{ s3_bucket_items_zip.s3_keys }}"
