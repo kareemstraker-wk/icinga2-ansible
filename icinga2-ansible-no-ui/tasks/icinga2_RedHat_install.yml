@@ -56,17 +56,6 @@
 
 - name: Download local Yum artifact packages and unzip
   block:
-    # - name: yum-clean-metadata
-    #   command: yum clean metadata
-    #   args:
-    #     warn: no
-
-    # - name: Remove icinga2 repository (and clean up left-over metadata)
-    #   yum_repository:
-    #     name: icinga-stable-release
-    #     state: absent
-    #   notify: yum-clean-metadata
-
     - name: remove icinga yum repo manually, if present
       shell: rm -f /etc/yum.repos.d/ICINGA-release.repo && yum makecache
 
@@ -123,58 +112,12 @@
     state: present
     line: 'obsoletes=0'
 
-# - name: Install Icinga2 Deps yum OS family
-#   yum:
-#     name: "{{ item.package }}"
-#     state: present
-#     update_cache: yes
-#   with_items: '{{ icinga2_yum_deps }}'
-
-# - name: Install Icinga2 on yum OS family
-#   yum:
-#     name: "{{ item }}"
-#     state: present
-#     update_cache: yes
-#   with_items:
-#     - "icinga2-common"
-#     - "icinga2-bin"
-#     - "icinga2"
-#     - "icinga2-libs"
-#     - "icinga2-ido-mysql"
-
-# - name: Get list of icinga2 (main) files from S3
-#   aws_s3:
-#     mode: list
-#     bucket: "{{ config_bucket }}"
-#     prefix: "rpm_main/"
-#     marker: "rpm_main/"
-#   register: s3_bucket_items
-
-# - name: Download icinga2 (main) files from S3
-#   aws_s3:
-#     mode: get
-#     overwrite: always
-#     bucket: "{{ config_bucket }}"
-#     object: "{{ item }}"
-#     dest: "/tmp/rpm_main/{{ item|basename }}"
-#   with_items: "{{ s3_bucket_items.s3_keys }}"
-
 - name: Get list of (main) files local
   find:
     paths: /tmp/rpm_main
     pattern: "*.rpm"
     recurse: no
   register: rpm_main_files
-
-# - name: Install Icinga2 (main) on local RPM
-#   yum:
-#     name: "/tmp/rpm_main/{{ item }}"
-#     state: present
-#   with_items: "{{ rpm_main_files.files }}"
-
-# - name: install icinga2 (main) manually with shell
-#   shell: "yum -y localinstall {{ rpm_main_files.files | map(attribute='path') | list }}"
-#   chdir: /tmp/rpm_main
 
 - name: install icinga2 (main) manually with shell
   shell: "yum -y localinstall {{ rpm_main_files.files | map(attribute='path') | join(' ') }}"
@@ -185,17 +128,6 @@
     path: /etc/yum.conf
     state: absent
     line: 'obsoletes=0'
-
-# - name: create icinga dir
-#   file:
-#     path: "{{ item }}"
-#     state: directory
-#     mode: 0755
-#     owner: icinga
-#     group: icinga
-#   with_items:
-#     - /etc/icinga2
-#     - /etc/icinga2/features-available
 
 - name: Start Icinga2
   service:
