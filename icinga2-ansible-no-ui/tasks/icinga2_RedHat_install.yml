@@ -1,4 +1,32 @@
 ---
+- name: Install boto for aws_s3
+  pip:
+    name:
+      - botocore>1.12.0,<1.13.0
+      - boto3>1.9.0<1.10.0
+
+- name: Install Icinga pre-requirements
+  yum:
+    name: "{{ packages }}"
+  vars:
+    packages:
+    - mysql-devel
+    - python-devel
+    - MySQL-python
+
+- name: install pyasn1
+  pip:
+    name: pyasn1
+    version: 0.4.1
+- name: install pyOpenSSL
+  pip:
+    name: pyOpenSSL
+    version: 18.0
+- name: install ndg-httpsclient
+  pip:
+    name: ndg-httpsclient
+    version: 0.4.3
+
 - name: Get Public Yum Repo
   block:
     - name: Get Icinga2 Yum Key on RedHat OS family
@@ -13,21 +41,165 @@
     - name: Get Icinga2 Yum Repo on RedHat OS family
       get_url: url='{{ icinga2_url_yum }}'
                dest={{ icinga2_repo_yum }}
+
+    - name: Set manually Icinga2 Yum Repo on RedHat OS family
+      copy:
+        content: |
+          [icinga-stable-release]
+          name=ICINGA (stable release for epel)
+          baseurl=http://packages.icinga.com/epel/7/release/
+          enabled=1
+          gpgcheck=1
+          gpgkey=https://packages.icinga.com/icinga.key
+        dest: "{{ icinga2_repo_yum }}"
   when: icinga2_use_public_yum_repo
 
-- name: Install Icinga2 on RedHat OS family
-  yum: name={{ item.package }}
-       state=latest
-  with_items: "{{ icinga2_yum }}"
-  when: ansible_pkg_mgr == "yum"
+- name: Download local Yum artifact packages and unzip
+  block:
+    # - name: yum-clean-metadata
+    #   command: yum clean metadata
+    #   args:
+    #     warn: no
 
-- name: Install Icinga2 on RedHat OS family (Fedora > 22)
-  dnf: name={{ item.package }}
-       state=latest
-  with_items: "{{ icinga2_yum }}"
-  when: ansible_pkg_mgr == "dnf"
+    # - name: Remove icinga2 repository (and clean up left-over metadata)
+    #   yum_repository:
+    #     name: icinga-stable-release
+    #     state: absent
+    #   notify: yum-clean-metadata
+
+    - name: remove icinga yum repo manually, if present
+      shell: rm -f /etc/yum.repos.d/ICINGA-release.repo && yum makecache
+
+    - name: create icinga temp dirs
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0777
+      with_items:
+        - /tmp/rpm_main
+        - /tmp/rpm_ido
+        - /tmp/rpm_web2
+        - /tmp/rpm_vendor
+
+    - name: Clean icinga artifact path
+      file:
+        state: absent
+        path: "{{ item }}"
+      with_fileglob:
+        - "/tmp/rpm_*.zip"
+        - "/tmp/rpm_main/*.rpm"
+        - "/tmp/rpm_ido/*.rpm"
+        - "/tmp/rpm_web2/*.rpm"
+        - "/tmp/rpm_vendor/*.rpm"
+
+    - name: Get list of icinga2 (zip) files from S3
+      aws_s3:
+        mode: list
+        bucket: "{{ config_bucket }}"
+        prefix: "rpm_"
+        marker: "rpm_"
+      register: s3_bucket_items_zip
+
+    - name: Download icinga2 (zip) files from S3
+      aws_s3:
+        mode: get
+        overwrite: always
+        bucket: "{{ config_bucket }}"
+        object: "{{ item }}"
+        dest: "/tmp/{{ item|basename }}"
+      with_items: "{{ s3_bucket_items_zip.s3_keys }}"
+
+    - name: Unarchive icinga2 (zip) files
+      unarchive:
+        src: "/tmp/{{ item }}"
+        dest: "/tmp/{{ item|basename|splitext|first }}"
+        remote_src: yes
+      with_items: "{{ s3_bucket_items_zip.s3_keys }}"
+  when: not icinga2_use_public_yum_repo
+
+- name: Fix yum weirdness
+  lineinfile:
+    path: /etc/yum.conf
+    state: present
+    line: 'obsoletes=0'
+
+# - name: Install Icinga2 Deps yum OS family
+#   yum:
+#     name: "{{ item.package }}"
+#     state: present
+#     update_cache: yes
+#   with_items: '{{ icinga2_yum_deps }}'
+
+# - name: Install Icinga2 on yum OS family
+#   yum:
+#     name: "{{ item }}"
+#     state: present
+#     update_cache: yes
+#   with_items:
+#     - "icinga2-common"
+#     - "icinga2-bin"
+#     - "icinga2"
+#     - "icinga2-libs"
+#     - "icinga2-ido-mysql"
+
+# - name: Get list of icinga2 (main) files from S3
+#   aws_s3:
+#     mode: list
+#     bucket: "{{ config_bucket }}"
+#     prefix: "rpm_main/"
+#     marker: "rpm_main/"
+#   register: s3_bucket_items
+
+# - name: Download icinga2 (main) files from S3
+#   aws_s3:
+#     mode: get
+#     overwrite: always
+#     bucket: "{{ config_bucket }}"
+#     object: "{{ item }}"
+#     dest: "/tmp/rpm_main/{{ item|basename }}"
+#   with_items: "{{ s3_bucket_items.s3_keys }}"
+
+- name: Get list of (main) files local
+  find:
+    paths: /tmp/rpm_main
+    pattern: "*.rpm"
+    recurse: no
+  register: rpm_main_files
+
+# - name: Install Icinga2 (main) on local RPM
+#   yum:
+#     name: "/tmp/rpm_main/{{ item }}"
+#     state: present
+#   with_items: "{{ rpm_main_files.files }}"
+
+# - name: install icinga2 (main) manually with shell
+#   shell: "yum -y localinstall {{ rpm_main_files.files | map(attribute='path') | list }}"
+#   chdir: /tmp/rpm_main
+
+- name: install icinga2 (main) manually with shell
+  shell: "yum -y localinstall {{ rpm_main_files.files | map(attribute='path') | join(' ') }}"
+  chdir: /tmp/rpm_main
+
+- name: Unfix yum weirdness
+  lineinfile:
+    path: /etc/yum.conf
+    state: absent
+    line: 'obsoletes=0'
+
+# - name: create icinga dir
+#   file:
+#     path: "{{ item }}"
+#     state: directory
+#     mode: 0755
+#     owner: icinga
+#     group: icinga
+#   with_items:
+#     - /etc/icinga2
+#     - /etc/icinga2/features-available
 
 - name: Start Icinga2
-  service: name=icinga2
-           state=started
-           enabled=yes
+  service:
+    name: icinga2
+    state: started
+    enabled: yes
+  ignore_errors: yes
