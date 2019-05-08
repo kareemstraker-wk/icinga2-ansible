@@ -1,29 +1,54 @@
 ---
+- name: Get list of (ido-mysql) files local
+  find:
+    paths: /tmp/rpm_ido
+    pattern: "*.rpm"
+    recurse: no
+  register: rpm_ido_files
+
+- name: install icinga2 (ido-mysql) manually with shell
+  shell: "yum -y localinstall {{ rpm_ido_files.files | map(attribute='path') | join(' ') }}"
+  chdir: /tmp/rpm_ido
+
 - name: Install Icinga2 IDO modules on RedHat OS family
-  yum: name=icinga2-ido-mysql
-       state=latest
+  yum:
+    name: php
+    state: latest
   when: ansible_pkg_mgr == "yum"
 
-- name: Install Icinga2 IDO modules on RedHat OS family (Fedora > 22)
-  dnf: name=icinga2-ido-mysql
-       state=latest
-  when: ansible_pkg_mgr == "dnf"
-
 - name: Create a IDO Database for Icinga2
-  mysql_db: name={{ icinga2_db }}
-            state=present
+  mysql_db:
+    name: "{{ icinga2_db }}"
+    state: present
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   register: icinga_ido_db
 
 - name: Create Icinga2 IDO Database User and configure Grants
-  mysql_user: name={{ icinga2_db_user }}
-              password={{ icinga2_db_pass }}
-              state=present
-              priv="{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE"
+  mysql_user:
+    name: "{{ icinga2_db_user }}"
+    # host: "%"
+    password: "{{ icinga2_db_pass }}"
+    state: present
+    priv: "{{ icinga2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE,REQUIRESSL"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
+  # register: icinga_ido_db
+  # Removed this register because this always registers as changed and will
+  # attempt to re-run "Import the IDO Schema on Icinga Web Database (only once)"
+  # which will cause the play to fail. This will still get triggered off of DB
+  # creation.
 
 - name: Import the IDO Schema on Icinga Web Database (only once)
-  mysql_db: name={{ icinga2_db }}
-            state=import
-            target={{ icinga2_web_mysql_schema_rh }}
+  mysql_db:
+    name: "{{ icinga2_db }}"
+    state: import
+    target: "{{ icinga2_web_mysql_schema_debian }}"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   when: icinga_ido_db.changed == true
 
 - name: Configure Icinga2 Ido Mysql Feature
@@ -42,38 +67,52 @@
   notify:
    - restart icinga2
 
-- name: Install Icinga Web2 on RedHat OS family
-  yum: name={{ item.package }}
-       state=latest
-       enablerepo={{ enablerepo }}
-  with_items: "{{ icinga2_web2_ui_rpm }}"
-  tags: icinga2-ansible-web2-ui-install
-  when: ansible_pkg_mgr == "yum"
+- name: Get list of (vendor) files local
+  find:
+    paths: /tmp/rpm_vendor
+    pattern: "*.rpm"
+    recurse: no
+  register: rpm_vendor_files
 
-- name: Install Icinga Web2 on RedHat OS family
-  dnf: name={{ item.package }}
-       state=latest
-       enablerepo={{ enablerepo }}
-  with_items: "{{ icinga2_web2_ui_rpm }}"
-  tags: icinga2-ansible-web2-ui-install
-  when: ansible_pkg_mgr == "dnf"
+- name: Get list of (web2) files local
+  find:
+    paths: /tmp/rpm_web2
+    pattern: "*.rpm"
+    recurse: no
+  register: rpm_web2_files
 
+- name: install icinga2 (web2) manually with shell
+  shell: "yum -y localinstall {{ (rpm_web2_files.files + rpm_vendor_files.files) | map(attribute='path') | join(' ') }}"
+  chdir: /tmp/rpm_web2
 
 - name: Create a Web Database for Icinga2
-  mysql_db: name={{ icinga2_web2_db }}
-            state=present
+  mysql_db:
+    name: "{{ icinga2_web2_db }}"
+    state: present
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   register: icinga_web_db
 
 - name: Create Icinga2 Web Database User and configure Grants
-  mysql_user: name={{ icinga2_web2_db_user }}
-              password={{ icinga2_web2_db_pass }}
-              state=present
-              priv="{{ icinga2_web2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE"
+  mysql_user:
+    name: "{{ icinga2_web2_db_user }}"
+    password: "{{ icinga2_web2_db_pass }}"
+    host: "%"
+    state: present
+    priv: "{{ icinga2_web2_db }}.*:GRANT,INSERT,SELECT,UPDATE,DELETE,DROP,CREATE VIEW,INDEX,EXECUTE,REQUIRESSL"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
 
 - name: Import the Web Schema on Icinga Web Database (only once)
-  mysql_db: name={{ icinga2_web2_db }}
-            state=import
-            target={{ icinga2_web2_mysql_schema_rh }}
+  mysql_db:
+    name: "{{ icinga2_web2_db }}"
+    state: import
+    target: "{{ icinga2_web2_mysql_schema_rh }}"
+    login_host: "{{ db_host }}"
+    login_user: "{{ db_root_username }}"
+    login_password: "{{ db_root_password }}"
   when: icinga_web_db.changed == true
 
 - name: Define web server daemon package.
@@ -81,13 +120,26 @@
     web_server_daemon: "{{ __web_server_daemon_rh }}"
   when: web_server_daemon is not defined
 
+- name: Add timezone to php.ini
+  replace:
+    path: /etc/php.ini
+    regexp: '^;date.timezone =.*'
+    replace: 'date.timezone = America/Chicago'
+
 - name: Restart {{ web_server_daemon }} and Icinga2 to Apply the Configuration
   service: name={{ item }}
-           state=restarted
+           state=reloaded
            enabled=yes
   with_items:
     - "{{ web_server_daemon }}"
     - icinga2
+  ignore_errors: yes
+
+- name: Start PHP FPM
+  service:
+    name: rh-php71-php-fpm
+    state: started
+    enabled: yes
 
 - name: Icinga Web2 Installation finished (RH)
   debug: msg="Now generate a token with 'icingacli setup token create' and go at http://IP//icingaweb2/setup to continue the installation"
