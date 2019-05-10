@@ -1,7 +1,7 @@
 Role Name
 =========
 
-Ansible role to install Icinga2 Web2 Ui
+Ansible role to install Icinga2 Web2 UI
 
 Requirements
 ------------
