@@ -11,11 +11,6 @@
     state: present
   with_items: '{{ icinga2_yum_deps }}'
 
-- name: Start Icinga2
-  service: name=icinga2
-           state=started
-           enabled=yes
-
 - name: install pyasn1
   pip:
     name: pyasn1
